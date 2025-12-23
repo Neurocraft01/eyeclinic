@@ -1,8 +1,10 @@
 import { getPageData } from "@/lib/data";
 import SectionRenderer from "@/components/SectionRenderer";
 
-export default function Home() {
-  const pageData = getPageData("home");
+export const dynamic = 'force-dynamic';
+
+export default async function Home() {
+  const pageData = await getPageData("home");
 
   if (!pageData) {
     return <div>Loading...</div>;

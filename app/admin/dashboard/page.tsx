@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, Calendar, MessageSquare, Settings, LogOut, Plus, Image as ImageIcon, Trash2, FileText, Check, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Users, Calendar, MessageSquare, Settings, LogOut, Plus, Image as ImageIcon, Trash2, FileText, Check, X, ChevronDown, ChevronUp, UserPlus, Star } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Appointment, GalleryItem, SiteData, Section, SectionType, ContactMessage } from "@/lib/data";
+import { Appointment, GalleryItem, SiteData, Section, SectionType, ContactMessage, TeamMember, Testimonial } from "@/lib/data";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -14,6 +14,8 @@ export default function AdminDashboard() {
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [contactMessages, setContactMessages] = useState<ContactMessage[]>([]);
   const [siteData, setSiteData] = useState<SiteData | null>(null);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   useEffect(() => {
@@ -33,10 +35,26 @@ export default function AdminDashboard() {
     fetch("/api/content")
       .then(res => res.json())
       .then(data => setSiteData(data));
+
+    fetch("/api/team")
+      .then(res => res.json())
+      .then(data => setTeamMembers(data));
+
+    fetch("/api/testimonials")
+      .then(res => res.json())
+      .then(data => setTestimonials(data));
   }, []);
 
   const [newImage, setNewImage] = useState({ src: "", alt: "", category: "Facility" });
   const [isAddingImage, setIsAddingImage] = useState(false);
+
+  // Team State
+  const [newMember, setNewMember] = useState({ name: "", role: "", bio: "", image: "" });
+  const [isAddingMember, setIsAddingMember] = useState(false);
+
+  // Testimonial State
+  const [newTestimonial, setNewTestimonial] = useState({ name: "", role: "", content: "", rating: 5, image: "" });
+  const [isAddingTestimonial, setIsAddingTestimonial] = useState(false);
 
   const handleAddImage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +71,54 @@ export default function AdminDashboard() {
         setNewImage({ src: "", alt: "", category: "Facility" });
         setIsAddingImage(false);
       }
+    }
+  };
+
+  const handleAddMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const response = await fetch("/api/team", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newMember)
+    });
+    
+    if (response.ok) {
+      const added = await response.json();
+      setTeamMembers([added, ...teamMembers]);
+      setNewMember({ name: "", role: "", bio: "", image: "" });
+      setIsAddingMember(false);
+    }
+  };
+
+  const handleDeleteMember = async (id: string) => {
+    if (!confirm("Delete this team member?")) return;
+    const response = await fetch(`/api/team?id=${id}`, { method: "DELETE" });
+    if (response.ok) {
+      setTeamMembers(teamMembers.filter(m => m.id !== id));
+    }
+  };
+
+  const handleAddTestimonial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const response = await fetch("/api/testimonials", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newTestimonial)
+    });
+    
+    if (response.ok) {
+      const added = await response.json();
+      setTestimonials([added, ...testimonials]);
+      setNewTestimonial({ name: "", role: "", content: "", rating: 5, image: "" });
+      setIsAddingTestimonial(false);
+    }
+  };
+
+  const handleDeleteTestimonial = async (id: string) => {
+    if (!confirm("Delete this testimonial?")) return;
+    const response = await fetch(`/api/testimonials?id=${id}`, { method: "DELETE" });
+    if (response.ok) {
+      setTestimonials(testimonials.filter(t => t.id !== id));
     }
   };
 
@@ -198,6 +264,20 @@ export default function AdminDashboard() {
           >
             <Users className="h-5 w-5" />
             <span>Patients</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab("team")}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-md transition-colors ${activeTab === "team" ? "bg-primary text-white" : "text-gray-400 hover:bg-gray-800 hover:text-white"}`}
+          >
+            <UserPlus className="h-5 w-5" />
+            <span>Team</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab("testimonials")}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-md transition-colors ${activeTab === "testimonials" ? "bg-primary text-white" : "text-gray-400 hover:bg-gray-800 hover:text-white"}`}
+          >
+            <Star className="h-5 w-5" />
+            <span>Testimonials</span>
           </button>
           <button 
             onClick={() => setActiveTab("gallery")}
@@ -544,11 +624,386 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {activeTab === "team" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-700">Team Members</h3>
+                <button 
+                  onClick={() => setIsAddingMember(!isAddingMember)}
+                  className="bg-primary text-white px-4 py-2 rounded-md text-sm flex items-center gap-2 hover:bg-secondary"
+                >
+                  <Plus className="h-4 w-4" /> {isAddingMember ? "Cancel" : "Add Member"}
+                </button>
+              </div>
+
+              {isAddingMember && (
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
+                  <h4 className="text-md font-semibold mb-4 text-gray-800">Add Team Member</h4>
+                  <form onSubmit={handleAddMember} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <input 
+                          type="text" 
+                          required
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          value={newMember.name}
+                          onChange={(e) => setNewMember({...newMember, name: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                        <input 
+                          type="text" 
+                          required
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          value={newMember.role}
+                          onChange={(e) => setNewMember({...newMember, role: e.target.value})}
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                        <textarea 
+                          required
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          rows={3}
+                          value={newMember.bio}
+                          onChange={(e) => setNewMember({...newMember, bio: e.target.value})}
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                        <input 
+                          type="text" 
+                          required
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          value={newMember.image}
+                          onChange={(e) => setNewMember({...newMember, image: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end">
+                      <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700">
+                        Save Member
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {teamMembers.map((member) => (
+                  <div key={member.id} className="bg-white p-6 rounded-xl shadow-sm flex flex-col items-center text-center relative group">
+                    <button 
+                      onClick={() => handleDeleteMember(member.id)}
+                      className="absolute top-4 right-4 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                    <div className="w-24 h-24 rounded-full overflow-hidden mb-4 bg-gray-100">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+                    </div>
+                    <h4 className="font-bold text-lg text-gray-800">{member.name}</h4>
+                    <p className="text-primary text-sm font-medium mb-2">{member.role}</p>
+                    <p className="text-gray-600 text-sm line-clamp-3">{member.bio}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === "testimonials" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-700">Testimonials</h3>
+                <button 
+                  onClick={() => setIsAddingTestimonial(!isAddingTestimonial)}
+                  className="bg-primary text-white px-4 py-2 rounded-md text-sm flex items-center gap-2 hover:bg-secondary"
+                >
+                  <Plus className="h-4 w-4" /> {isAddingTestimonial ? "Cancel" : "Add Testimonial"}
+                </button>
+              </div>
+
+              {isAddingTestimonial && (
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
+                  <h4 className="text-md font-semibold mb-4 text-gray-800">Add Testimonial</h4>
+                  <form onSubmit={handleAddTestimonial} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <input 
+                          type="text" 
+                          required
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          value={newTestimonial.name}
+                          onChange={(e) => setNewTestimonial({...newTestimonial, name: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Role (Optional)</label>
+                        <input 
+                          type="text" 
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          placeholder="e.g. Patient since 2020"
+                          value={newTestimonial.role}
+                          onChange={(e) => setNewTestimonial({...newTestimonial, role: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Rating (1-5)</label>
+                        <select 
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          value={newTestimonial.rating}
+                          onChange={(e) => setNewTestimonial({...newTestimonial, rating: Number(e.target.value)})}
+                        >
+                          <option value="5">5 Stars</option>
+                          <option value="4">4 Stars</option>
+                          <option value="3">3 Stars</option>
+                          <option value="2">2 Stars</option>
+                          <option value="1">1 Star</option>
+                        </select>
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                        <textarea 
+                          required
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          rows={3}
+                          value={newTestimonial.content}
+                          onChange={(e) => setNewTestimonial({...newTestimonial, content: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end">
+                      <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700">
+                        Save Testimonial
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {testimonials.map((t) => (
+                  <div key={t.id} className="bg-white p-6 rounded-xl shadow-sm relative group">
+                    <button 
+                      onClick={() => handleDeleteTestimonial(t.id)}
+                      className="absolute top-4 right-4 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                    <div className="flex items-center gap-1 text-yellow-400 mb-3">
+                      {[...Array(t.rating)].map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
+                    </div>
+                    <p className="text-gray-600 italic mb-4">&quot;{t.content}&quot;</p>
+                    <div>
+                      <h4 className="font-bold text-gray-800">{t.name}</h4>
+                      {t.role && <p className="text-xs text-gray-500">{t.role}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {activeTab === "patients" && (
              <div className="bg-white p-8 rounded-xl shadow-sm text-center text-gray-500">
                <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                <p>Patient management module placeholder.</p>
              </div>
+          )}
+
+          {activeTab === "team" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-700">Team Members</h3>
+                <button 
+                  onClick={() => setIsAddingMember(!isAddingMember)}
+                  className="bg-primary text-white px-4 py-2 rounded-md text-sm flex items-center gap-2 hover:bg-secondary"
+                >
+                  <Plus className="h-4 w-4" /> {isAddingMember ? "Cancel" : "Add Member"}
+                </button>
+              </div>
+
+              {isAddingMember && (
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
+                  <h4 className="text-md font-semibold mb-4 text-gray-800">Add New Team Member</h4>
+                  <form onSubmit={handleAddMember} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <input 
+                          type="text" 
+                          required
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          value={newMember.name}
+                          onChange={(e) => setNewMember({...newMember, name: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                        <input 
+                          type="text" 
+                          required
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          value={newMember.role}
+                          onChange={(e) => setNewMember({...newMember, role: e.target.value})}
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                        <textarea 
+                          required
+                          rows={3}
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          value={newMember.bio}
+                          onChange={(e) => setNewMember({...newMember, bio: e.target.value})}
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                        <input 
+                          type="text" 
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          value={newMember.image}
+                          onChange={(e) => setNewMember({...newMember, image: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end">
+                      <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700">
+                        Save Member
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {teamMembers.map((member) => (
+                  <div key={member.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative group">
+                    <button 
+                      onClick={() => handleDeleteMember(member.id)}
+                      className="absolute top-4 right-4 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="h-16 w-16 bg-gray-200 rounded-full overflow-hidden">
+                        {member.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={member.image} alt={member.name} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center text-gray-400">
+                            <Users className="h-8 w-8" />
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-800">{member.name}</h4>
+                        <p className="text-sm text-primary">{member.role}</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 line-clamp-3">{member.bio}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === "testimonials" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-700">Testimonials</h3>
+                <button 
+                  onClick={() => setIsAddingTestimonial(!isAddingTestimonial)}
+                  className="bg-primary text-white px-4 py-2 rounded-md text-sm flex items-center gap-2 hover:bg-secondary"
+                >
+                  <Plus className="h-4 w-4" /> {isAddingTestimonial ? "Cancel" : "Add Testimonial"}
+                </button>
+              </div>
+
+              {isAddingTestimonial && (
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
+                  <h4 className="text-md font-semibold mb-4 text-gray-800">Add New Testimonial</h4>
+                  <form onSubmit={handleAddTestimonial} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Patient Name</label>
+                        <input 
+                          type="text" 
+                          required
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          value={newTestimonial.name}
+                          onChange={(e) => setNewTestimonial({...newTestimonial, name: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Role / Description</label>
+                        <input 
+                          type="text" 
+                          placeholder="e.g. Patient since 2020"
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          value={newTestimonial.role}
+                          onChange={(e) => setNewTestimonial({...newTestimonial, role: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Rating (1-5)</label>
+                        <select 
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          value={newTestimonial.rating}
+                          onChange={(e) => setNewTestimonial({...newTestimonial, rating: Number(e.target.value)})}
+                        >
+                          <option value="5">5 Stars</option>
+                          <option value="4">4 Stars</option>
+                          <option value="3">3 Stars</option>
+                          <option value="2">2 Stars</option>
+                          <option value="1">1 Star</option>
+                        </select>
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                        <textarea 
+                          required
+                          rows={3}
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          value={newTestimonial.content}
+                          onChange={(e) => setNewTestimonial({...newTestimonial, content: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end">
+                      <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700">
+                        Save Testimonial
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {testimonials.map((t) => (
+                  <div key={t.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative group">
+                    <button 
+                      onClick={() => handleDeleteTestimonial(t.id)}
+                      className="absolute top-4 right-4 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                    <div className="flex items-center gap-2 mb-2 text-yellow-400">
+                      {[...Array(t.rating)].map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
+                    </div>
+                    <p className="text-gray-600 italic mb-4">&quot;{t.content}&quot;</p>
+                    <div>
+                      <h4 className="font-bold text-gray-800">{t.name}</h4>
+                      <p className="text-xs text-gray-500">{t.role}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           {activeTab === "messages" && (

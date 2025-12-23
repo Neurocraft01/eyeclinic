@@ -1,9 +1,5 @@
 import Link from "next/link";
-import { Eye, Glasses, Activity, Microscope, ScanEye, Zap, MonitorPlay, ShieldCheck, CreditCard, Wallet } from "lucide-react";
-
-const iconMap: any = {
-  Eye, Glasses, Activity, Microscope, ScanEye, Zap, MonitorPlay, ShieldCheck, CreditCard, Wallet
-};
+import { Icon } from "./Icon";
 
 interface ServiceItem {
   title: string;
@@ -55,14 +51,13 @@ const ServicesPreview = ({ title, description, items }: ServicesPreviewProps) =>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {displayServices.map((service, index) => {
-            const IconComponent = iconMap[service.icon] || Eye;
             return (
               <div 
                 key={index} 
                 className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 group"
               >
                 <div className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary transition-colors duration-300">
-                  <IconComponent className="h-7 w-7 text-primary group-hover:text-white transition-colors duration-300" />
+                  <Icon name={service.icon} className="h-7 w-7 text-primary group-hover:text-white transition-colors duration-300" />
                 </div>
                 <h3 className="text-xl font-bold text-dark mb-3">{service.title}</h3>
                 <p className="text-gray-600 mb-6 leading-relaxed">

@@ -2,8 +2,8 @@ import Link from "next/link";
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
 import { getAllSiteData } from "@/lib/data";
 
-const Footer = () => {
-  const { settings } = getAllSiteData();
+const Footer = async () => {
+  const { settings } = await getAllSiteData();
 
   return (
     <footer className="bg-dark text-white pt-12 pb-8">

@@ -1,8 +1,10 @@
 import { getPageData } from "@/lib/data";
 import SectionRenderer from "@/components/SectionRenderer";
 
-export default function AboutPage() {
-  const pageData = getPageData("about");
+export const dynamic = 'force-dynamic';
+
+export default async function AboutPage() {
+  const pageData = await getPageData("about");
 
   if (!pageData) {
     return <div>Loading...</div>;

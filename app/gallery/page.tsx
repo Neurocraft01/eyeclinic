@@ -9,8 +9,8 @@ export const metadata = {
 // Force dynamic rendering so we always get the latest data
 export const dynamic = 'force-dynamic';
 
-export default function GalleryPage() {
-  const galleryImages = getGalleryImages();
+export default async function GalleryPage() {
+  const galleryImages = await getGalleryImages();
 
   return (
     <div className="bg-white min-h-screen">

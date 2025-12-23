@@ -1,7 +1,6 @@
 "use client";
 
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
-import { getAllSiteData } from "@/lib/data";
 import { useState, useEffect } from "react";
 
 // Force dynamic rendering to ensure we get the latest settings

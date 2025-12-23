@@ -1,15 +1,14 @@
-
 import { NextResponse } from "next/server";
-import { getGalleryImages, addGalleryImage, deleteGalleryImage } from "@/lib/data";
+import { getTeamMembers, addTeamMember, deleteTeamMember } from "@/lib/data";
 
 export async function GET() {
-  return NextResponse.json(await getGalleryImages());
+  return NextResponse.json(await getTeamMembers());
 }
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const newImage = await addGalleryImage(body);
-  return NextResponse.json(newImage);
+  const newMember = await addTeamMember(body);
+  return NextResponse.json(newMember);
 }
 
 export async function DELETE(request: Request) {
@@ -17,9 +16,9 @@ export async function DELETE(request: Request) {
   const id = searchParams.get("id");
   
   if (id) {
-    await deleteGalleryImage(id);
+    await deleteTeamMember(id);
     return NextResponse.json({ success: true });
   }
   
-  return NextResponse.json({ error: "ID required" }, { status: 400 });
+  return NextResponse.json({ error: "Missing id" }, { status: 400 });
 }

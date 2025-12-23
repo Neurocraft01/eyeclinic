@@ -1,8 +1,4 @@
-import { CreditCard, ShieldCheck, Wallet, Eye, Glasses, Activity, Microscope, ScanEye, Zap, MonitorPlay } from "lucide-react";
-
-const iconMap: any = {
-  Eye, Glasses, Activity, Microscope, ScanEye, Zap, MonitorPlay, ShieldCheck, CreditCard, Wallet
-};
+import { Icon } from "./Icon";
 
 interface InsuranceItem {
   text: string;
@@ -36,10 +32,9 @@ const InsuranceSection = ({ title, description, items }: InsuranceSectionProps) 
             
             <div className="space-y-4">
               {displayItems.map((item, index) => {
-                const IconComponent = iconMap[item.icon] || ShieldCheck;
                 return (
                   <div key={index} className="flex items-center gap-3">
-                    <IconComponent className="h-5 w-5 text-primary" />
+                    <Icon name={item.icon} className="h-5 w-5 text-primary" />
                     <span className="text-gray-700 font-medium">{item.text}</span>
                   </div>
                 );

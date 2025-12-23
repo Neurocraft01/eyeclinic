@@ -1,8 +1,4 @@
-import { Microscope, ScanEye, MonitorPlay, Zap, Eye, Glasses, Activity, ShieldCheck, CreditCard, Wallet } from "lucide-react";
-
-const iconMap: any = {
-  Eye, Glasses, Activity, Microscope, ScanEye, Zap, MonitorPlay, ShieldCheck, CreditCard, Wallet
-};
+import { Icon } from "./Icon";
 
 interface TechItem {
   title: string;
@@ -60,14 +56,13 @@ const TechnologySection = ({ title, description, items }: TechnologySectionProps
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {displayTechnologies.map((tech, index) => {
-            const IconComponent = iconMap[tech.icon] || ScanEye;
             return (
               <div 
                 key={index} 
                 className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 rounded-xl hover:bg-white/10 transition-colors duration-300"
               >
                 <div className="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center mb-4 text-accent">
-                  <IconComponent className="h-6 w-6" />
+                  <Icon name={tech.icon} className="h-6 w-6" />
                 </div>
                 <h3 className="text-xl font-semibold mb-3">{tech.title}</h3>
                 <p className="text-gray-400 text-sm leading-relaxed">

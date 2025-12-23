@@ -3,12 +3,12 @@ import { NextResponse } from "next/server";
 import { getAppointments, addAppointment } from "@/lib/data";
 
 export async function GET() {
-  return NextResponse.json(getAppointments());
+  return NextResponse.json(await getAppointments());
 }
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const newAppointment = addAppointment(body);
+  const newAppointment = await addAppointment(body);
 
   // Trigger Email Notification
   console.log("---------------------------------------------------");

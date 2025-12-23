@@ -4,7 +4,7 @@ import { updateAppointment, deleteAppointment } from "@/lib/data";
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   const body = await request.json();
-  const updatedAppointment = updateAppointment(params.id, body);
+  const updatedAppointment = await updateAppointment(params.id, body);
   
   if (updatedAppointment) {
     return NextResponse.json(updatedAppointment);
@@ -14,6 +14,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  deleteAppointment(params.id);
+  await deleteAppointment(params.id);
   return NextResponse.json({ success: true });
 }

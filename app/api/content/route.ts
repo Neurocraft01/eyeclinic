@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getAllSiteData, updatePageData, updateSiteSettings } from "@/lib/data";
 
 export async function GET() {
-  return NextResponse.json(getAllSiteData());
+  return NextResponse.json(await getAllSiteData());
 }
 
 export async function POST(request: Request) {
@@ -11,12 +11,12 @@ export async function POST(request: Request) {
   const { slug, data, settings } = body;
   
   if (settings) {
-    const updated = updateSiteSettings(settings);
+    const updated = await updateSiteSettings(settings);
     return NextResponse.json(updated);
   }
 
   if (slug && data) {
-      const updated = updatePageData(slug, data);
+      const updated = await updatePageData(slug, data);
       return NextResponse.json(updated);
   }
   

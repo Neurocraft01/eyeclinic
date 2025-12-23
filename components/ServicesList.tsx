@@ -1,8 +1,4 @@
-import { Eye, Glasses, Activity, Microscope, ShieldCheck, Clock, ScanEye, Zap, MonitorPlay, CreditCard, Wallet } from "lucide-react";
-
-const iconMap: any = {
-  Eye, Glasses, Activity, Microscope, ShieldCheck, Clock, ScanEye, Zap, MonitorPlay, CreditCard, Wallet
-};
+import { Icon } from "./Icon";
 
 interface ServiceItem {
   id?: string;
@@ -30,12 +26,11 @@ const ServicesList = ({ title, description, items }: ServicesListProps) => {
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         {items.map((service, index) => {
-          const IconComponent = iconMap[service.icon] || Eye;
           return (
             <div key={service.id || index} id={service.id} className="flex flex-col md:flex-row gap-6 p-6 rounded-xl border border-gray-100 hover:shadow-lg transition-shadow duration-300">
               <div className="flex-shrink-0">
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                  <IconComponent className="h-8 w-8 text-primary" />
+                  <Icon name={service.icon} className="h-8 w-8 text-primary" />
                 </div>
               </div>
               <div>

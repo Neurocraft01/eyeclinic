@@ -9,8 +9,8 @@ export const metadata = {
 // Force dynamic rendering so we always get the latest data
 export const dynamic = 'force-dynamic';
 
-export default function ServicesPage() {
-  const pageData = getPageData("services");
+export default async function ServicesPage() {
+  const pageData = await getPageData("services");
 
   if (!pageData) {
     return <div>Loading...</div>;
